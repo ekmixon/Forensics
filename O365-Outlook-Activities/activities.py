@@ -36,16 +36,12 @@ class OutlookService(object):
         self.request_session.headers.update(self.headers)
 
     def get_activities(self, user, **kwargs):
-        api_url = self.base_url.format(user) + "/Activities?"
-        params = {'${}'.format(param): value
-                  for param, value in kwargs.items()}
+        api_url = f"{self.base_url.format(user)}/Activities?"
+        params = {f'${param}': value for param, value in kwargs.items()}
 
         response = self.request_session.get(api_url, params=params)
         self._handle_errors(response)
-        activities = [Activity(activity)
-                      for activity in response.json()['value']]
-
-        return activities
+        return [Activity(activity) for activity in response.json()['value']]
 
     def _handle_errors(self, response):
         if 199 < response.status_code < 300:
@@ -60,12 +56,11 @@ class OutlookService(object):
         else:
             error = 'Server error.'
 
-        raise ValueError('HTTP {}: {}'.format(response.status_code, error))
+        raise ValueError(f'HTTP {response.status_code}: {error}')
 
     @staticmethod
     def _get_auth_error_from_headers(headers):
-        fields = headers.get('x-ms-diagnostics')
-        if fields:
+        if fields := headers.get('x-ms-diagnostics'):
             for field in fields.split(';'):
                 if field.startswith('reason'):
                     return field.split('=')[1][1:-1]
@@ -76,6 +71,5 @@ class OAuth(requests.auth.AuthBase):
         self.access_token = access_token
 
     def __call__(self, request):
-        request.headers['Authorization'] = 'Bearer {}'.format(
-                self.access_token)
+        request.headers['Authorization'] = f'Bearer {self.access_token}'
         return request

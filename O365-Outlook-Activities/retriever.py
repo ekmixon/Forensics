@@ -5,6 +5,7 @@ Obtain a valid OAuth 2.0 access token from https://oauthplay.azurewebsites.net
 or implement your own OAuth 2.0 flow for Azure AD.
 """
 
+
 import argparse
 import csv
 import os
@@ -44,7 +45,7 @@ parser.add_argument('--types', metavar='<type>',
 args = parser.parse_args()
 
 # Verify access token was supplied
-access_token = args.token if args.token else os.environ.get('OAUTH_TOKEN')
+access_token = args.token or os.environ.get('OAUTH_TOKEN')
 if not access_token:
     print("An access token must be supplied via the '--token' command-line "
           "argument or via the 'OAUTH_TOKEN' environment variable.")
@@ -53,13 +54,15 @@ if not access_token:
 # Construct filter expression
 filters = []
 if args.start:
-    filters.append('(TimeStamp ge {})'.format(args.start))
+    filters.append(f'(TimeStamp ge {args.start})')
 if args.end:
-    filters.append('(TimeStamp le {})'.format(args.end))
+    filters.append(f'(TimeStamp le {args.end})')
 if args.types:
-    types = ["ActivityIdType eq '{}'".format(
-            activity_type) for activity_type in args.types]
-    filters.append('({})'.format(' or '.join(types)))
+    types = [
+        f"ActivityIdType eq '{activity_type}'" for activity_type in args.types
+    ]
+
+    filters.append(f"({' or '.join(types)})")
 filter_expression = ' and '.join(filters)
 
 # Create Outlook service
@@ -101,7 +104,7 @@ while True:
         except IOError as error:
             print(error)
             sys.exit(1)
-        
+
         print('Retrieving activities', end='')
 
     # Write rows to CSV file
@@ -120,5 +123,6 @@ while True:
 
 # Close file and print completion status
 csv_file.close()
-print('\nSuccessfully retrieved {} activities.'.format(
-        batches * BATCH_SIZE + len(activities)))
+print(
+    f'\nSuccessfully retrieved {batches * BATCH_SIZE + len(activities)} activities.'
+)

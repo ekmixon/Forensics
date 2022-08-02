@@ -23,7 +23,7 @@ class data_writer:
         self.name = name
         self.datatype = datatype
         self.headers = headers
-        self.output_filename = self.name+'.'+self.datatype
+        self.output_filename = f'{self.name}.{self.datatype}'
         self.data_file_name = os.path.join(outputdir, self.output_filename)
 
         if self.datatype == 'csv':

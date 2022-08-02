@@ -15,75 +15,68 @@ def portHawk(engagementName, hostname, interface, verbose):
     if hostname == '':
         hostname = socket.gethostname()
 
-    data = "[%s](%s)" % (engagementName, hostname)
+    data = f"[{engagementName}]({hostname})"
     data = trigger + encryptKey.encrypt(data, 32)[0].encode('hex')
     serverIP = "REPLACETHISIPADDRESSREPLACETHISIPADDRESS"
-    
+
     if interface != '':
         s = conf.L3socket(iface=interface)
         if verbose:
             import progressbar
             bar = progressbar.ProgressBar()
-            # send ICMP Packets type 0-255
-            print "sending ICMP packets..."
-            for n in bar(range(0,256)):
+            import progressbar
+            for n in bar(range(256)):
                 s.send(IP(dst=serverIP) /ICMP(type=n)/str(data))
 
-            # send UDP Packets
-            print "sending UDP packets..."
-            bar = progressbar.ProgressBar()
-            for n in bar(range(0,65536)):
-                s.send(IP(dst=serverIP) / UDP(dport=n) / Raw(load=data))
-
-            # send TCP Packets
-            print "sending TCP packets..."
-            bar = progressbar.ProgressBar()
-            for n in bar(range(0,65536)):
-                s.send(IP(dst=serverIP) / TCP(dport=n) / Raw(load=data))
-        else:
-            # send ICMP
-            for n in range(0,256):
-                s.send(IP(dst=serverIP) /ICMP(type=n)/str(data))
-
-            # send UDP Packets
-            for n in range(0,65536):
-                s.send(IP(dst=serverIP) / UDP(dport=n) / Raw(load=data))
-
-            # send TCP Packets
-            for n in range(0,65536):
-                s.send(IP(dst=serverIP) / TCP(dport=n) / Raw(load=data))
-    else:
-        if verbose:
             import progressbar
             bar = progressbar.ProgressBar()
-            # send ICMP Packets type 0-255
-            print "sending ICMP packets..."
-            for n in bar(range(0,256)):
-                send(IP(dst=serverIP) /ICMP(type=n)/str(data), verbose=0)
+            for n in bar(range(65536)):
+                s.send(IP(dst=serverIP) / UDP(dport=n) / Raw(load=data))
 
-            # send UDP Packets
-            print "sending UDP packets..."
+            import progressbar
             bar = progressbar.ProgressBar()
-            for n in bar(range(0,65536)):
-                send(IP(dst=serverIP) / UDP(dport=n) / Raw(load=data), verbose=0)
-
-            # send TCP Packets
-            print "sending TCP packets..."
-            bar = progressbar.ProgressBar()
-            for n in bar(range(0,65536)):
-                send(IP(dst=serverIP) / TCP(dport=n) / Raw(load=data), verbose=0)
+            for n in bar(range(65536)):
+                s.send(IP(dst=serverIP) / TCP(dport=n) / Raw(load=data))
         else:
             # send ICMP
-            for n in range(0,256):
-                send(IP(dst=serverIP) /ICMP(type=n)/str(data), verbose=0)
+            for n in range(256):
+                s.send(IP(dst=serverIP) /ICMP(type=n)/str(data))
 
             # send UDP Packets
-            for n in range(0,65536):
-                send(IP(dst=serverIP) / UDP(dport=n) / Raw(load=data), verbose=0)
+            for n in range(65536):
+                s.send(IP(dst=serverIP) / UDP(dport=n) / Raw(load=data))
 
             # send TCP Packets
-            for n in range(0,65536):
-                send(IP(dst=serverIP) / TCP(dport=n) / Raw(load=data), verbose=0)
+            for n in range(65536):
+                s.send(IP(dst=serverIP) / TCP(dport=n) / Raw(load=data))
+    elif verbose:
+        import progressbar
+        bar = progressbar.ProgressBar()
+        import progressbar
+        for n in bar(range(256)):
+            send(IP(dst=serverIP) /ICMP(type=n)/str(data), verbose=0)
+
+        import progressbar
+        bar = progressbar.ProgressBar()
+        for n in bar(range(65536)):
+            send(IP(dst=serverIP) / UDP(dport=n) / Raw(load=data), verbose=0)
+
+        import progressbar
+        bar = progressbar.ProgressBar()
+        for n in bar(range(65536)):
+            send(IP(dst=serverIP) / TCP(dport=n) / Raw(load=data), verbose=0)
+    else:
+            # send ICMP
+        for n in range(256):
+            send(IP(dst=serverIP) /ICMP(type=n)/str(data), verbose=0)
+
+            # send UDP Packets
+        for n in range(65536):
+            send(IP(dst=serverIP) / UDP(dport=n) / Raw(load=data), verbose=0)
+
+            # send TCP Packets
+        for n in range(65536):
+            send(IP(dst=serverIP) / TCP(dport=n) / Raw(load=data), verbose=0)
 
 
 def main(argv):

@@ -23,27 +23,25 @@ class MailboxActions(Parser):
                   'UpdateInboxRules', 'New-InboxRule']
 
     def check(self, event):
-        return True if event['Operation'] in self.operations else False
+        return event['Operation'] in self.operations
             
     def run(self, event):
         if event.get('ClientInfoString'):
             client_type, user_agent = self._get_client_info(event['ClientInfoString'])
         else:
             client_type, user_agent = None, None
-        if event.get('ClientIPAddress'):
-            ip_address = event['ClientIPAddress']
-        else:
-            ip_address = None
-        parsed_event = {'Time': event['CreationTime'],
-                        'Action': event['Operation'],
-                        'Workload': event['Workload'],
-                        'User': event['UserId'],
-                        'Status': event['ResultStatus'],
-                        'Client_IP': ip_address,
-                        'Client_Type': client_type,
-                        'User_Agent': user_agent,
-                        'Data': event}
-        return parsed_event
+        ip_address = event['ClientIPAddress'] if event.get('ClientIPAddress') else None
+        return {
+            'Time': event['CreationTime'],
+            'Action': event['Operation'],
+            'Workload': event['Workload'],
+            'User': event['UserId'],
+            'Status': event['ResultStatus'],
+            'Client_IP': ip_address,
+            'Client_Type': client_type,
+            'User_Agent': user_agent,
+            'Data': event,
+        }
 
     def _get_client_info(self, clientinfostring):
         strings = clientinfostring.split(';')
@@ -60,22 +58,22 @@ class MailboxActions(Parser):
 class ForwardingRule(Parser):
     
     def check(self, event):
-        if event.get('ExtendedProperties', {}).get('ForwardingSmtpAddress'):
-            return True
-        else:
-            return False
+        return bool(event.get('ExtendedProperties', {}).get('ForwardingSmtpAddress'))
 
     def run(self, event):
         client_ip = event['ClientIP'].split(':')[0]
-        parsed_event = {'Time': event['CreationTime'],
-                        'Action': 'ForwardingRule',
-                        'Workload': event['Workload'],
-                        'User': event['UserId'],
-                        'Status': event['ResultStatus'],
-                        'Address': event['ExtendedProperties']['ForwardingSmtpAddress'].split(':')[1],
-                        'Client_IP': client_ip,
-                        'Data': event}
-        return parsed_event
+        return {
+            'Time': event['CreationTime'],
+            'Action': 'ForwardingRule',
+            'Workload': event['Workload'],
+            'User': event['UserId'],
+            'Status': event['ResultStatus'],
+            'Address': event['ExtendedProperties']['ForwardingSmtpAddress'].split(
+                ':'
+            )[1],
+            'Client_IP': client_ip,
+            'Data': event,
+        }
 
 
 class Default(Parser):
@@ -100,7 +98,7 @@ class Default(Parser):
                 else:
                     client_ip = event['ClientIP'].split(':')[0]
             parsed_event['Client_IP'] = client_ip
-                
+
         if event.get('ResultStatus'):
             parsed_event['Status'] = event.get('ResultStatus')
 

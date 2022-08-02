@@ -22,7 +22,7 @@ class Geolocation(Enricher):
         self.reader = geoip2.database.Reader(self.db_path)
 
     def check(self, event):
-        return True if event.get('Client_IP') else False
+        return bool(event.get('Client_IP'))
             
     def run(self, event):
         enriched_event = event

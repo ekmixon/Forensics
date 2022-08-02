@@ -35,7 +35,7 @@ with open(args.input) as input_file:
         except json.decoder.JSONDecodeError:
             continue
 
-        if WORKLOADS and not audit_data.get('Workload') in WORKLOADS:
+        if WORKLOADS and audit_data.get('Workload') not in WORKLOADS:
             continue
 
         if any(user in row['UserIds'] for user in EXCLUDED_USERS):
@@ -51,7 +51,7 @@ with open(args.input) as input_file:
                             extended_prop['Name']] = extended_prop['Value']
             else:
                 event[prop] = value
-        
+
         # Parse event
         for parser in Parser.parsers:
             if parser.check(event):
